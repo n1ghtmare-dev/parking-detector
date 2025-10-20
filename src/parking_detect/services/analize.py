@@ -31,9 +31,9 @@ class Service:
 
             # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             frame_handler = FrameProcessor(frame)
-            frame_handler.detect_spots()
+            done_frame = frame_handler.detect_spots()
             
-            # cv2.imshow("frame", done_frame)
+            cv2.imshow("frame", done_frame)
 
             # for i, spot in enumerate(self.parking_spots):
             #     occupied = self.check_spot_occupancy(frame, spot)
@@ -45,8 +45,8 @@ class Service:
             #                cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
                 
             # cv2.imshow('Parking', frame)
-            # if cv2.waitKey(30) & 0xFF == ord('q'):
-            #     break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
         cap.release()
         cv2.destroyAllWindows()

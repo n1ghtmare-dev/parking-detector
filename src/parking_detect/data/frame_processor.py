@@ -40,7 +40,7 @@ class FrameProcessor:
 
     def convert_to_grayscale(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
+        _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY) # v2 = 150
         contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         contour_image = frame.copy()
@@ -53,39 +53,39 @@ class FrameProcessor:
             return
         current_time = time.time()
         elapsed_time = current_time - self.last_call_time
-        threshold = 30
+        threshold = 170
 
         free_spots = 0
         for spot in self.parking_spots:
             print(spot)
             xs = [point[0] for point in spot["points"]]
             ys = [point[1] for point in spot["points"]]
-            print(xs)
 
-        x_min, x_max = min(xs), max(xs)
-        y_min, y_max = min(ys), max(ys)
+            x_min, x_max = min(xs), max(xs)
+            y_min, y_max = min(ys), max(ys)
 
-        x1 = x_min + 10
-        x2 = x_max - 10
-        y1 = y_min + 10
-        y2 = y_max
+            x1 = x_min + 10
+            x2 = x_max - 5
+            y1 = y_min + 5
+            y2 = y_max - 5
 
-        start_point, stop_point = (x1, y1), (x2, y2)
+            start_point, stop_point = (x1, y1), (x2, y2)
 
-        grayscale_frame = self.convert_to_grayscale(self.clone)
-        crop = grayscale_frame[y1:y2, x1:x2]
-        cv2.imshow("T", crop)
-        gray_crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-        cv2.imshow("S", gray_crop)
-        
-        count = cv2.countNonZero(gray_crop)
-        print(count)
-        color, thick = [(0, 255, 0), 5] if count < threshold else [(0, 0, 255), 2]
+            grayscale_frame = self.convert_to_grayscale(self.clone)
+            crop = grayscale_frame[y1:y2, x1:x2]
+            # cv2.imshow("T", crop)
+            gray_crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+            if spot["id"] == 13:
+                cv2.imshow("S", gray_crop)
+            
+            count = cv2.countNonZero(gray_crop)
+            print(count)
+            color, thick = [(0, 255, 0), 5] if count < threshold else [(0, 0, 255), 2]
 
-        if count < threshold:
-            free_spots += 1
+            if count < threshold:
+                free_spots += 1
 
-        cv2.rectangle(self.clone, start_point, stop_point, color, thick)
+            cv2.rectangle(self.clone, start_point, stop_point, color, thick)
 
         current_time = time.time()
 
@@ -93,6 +93,7 @@ class FrameProcessor:
         points_array = np.array(spot["points"], np.int32)
         cv2.polylines(self.clone, [points_array], True, (0, 255, 0), 2)
         print("DRAW", self.parking_spots)
+
         # Put The Text
         # center_x = sum([p[0] for p in spot["points"]]) // 4
         # center_y = sum([p[1] for p in spot["points"]]) // 4
@@ -134,10 +135,12 @@ class FrameProcessor:
         self.load_spots()
 
         while True:
+            # frame_with_spots = self.draw_all_spots(self.clone)
             self.check_spots_occupancy()
-            frame_with_spots = self.draw_all_spots(self.clone)
 
-            cv2.imshow("SPOTS DETECT", frame_with_spots)
+            cv2.imshow("SPOTS DETECT", self.clone)
+
+
             key = cv2.waitKey(1) & 0xFF
 
             if key == ord('s'):
@@ -147,5 +150,6 @@ class FrameProcessor:
             elif key == ord('q'):
                 break
 
+            # return self.clone
 
         cv2.destroyAllWindows()
