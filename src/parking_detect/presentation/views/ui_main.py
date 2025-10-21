@@ -67,31 +67,16 @@ class Ui_MainWindow(object):
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setMaximumSize(QSize(200, 16777215))
         self.scrollArea.setWidgetResizable(True)
-        self.scrollAreaWidgetContents = QWidget()
-        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 198, 504))
-        self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.scrollAreaParkingSpots = QWidget()
+        self.scrollAreaParkingSpots.setObjectName(u"scrollAreaParkingSpots")
+        self.scrollAreaParkingSpots.setGeometry(QRect(0, 0, 198, 504))
+        self.verticalLayout_2 = QVBoxLayout(self.scrollAreaParkingSpots)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.frame_2 = QFrame(self.scrollAreaWidgetContents)
-        self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setMinimumSize(QSize(0, 20))
-        self.frame_2.setFrameShape(QFrame.Shape.StyledPanel)
-        self.frame_2.setFrameShadow(QFrame.Shadow.Raised)
-        self.horizontalLayout_3 = QHBoxLayout(self.frame_2)
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.label_2 = QLabel(self.frame_2)
-        self.label_2.setObjectName(u"label_2")
-
-        self.horizontalLayout_3.addWidget(self.label_2)
-
-
-        self.verticalLayout_2.addWidget(self.frame_2)
-
-        self.verticalSpacer = QSpacerItem(20, 440, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 483, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
 
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.scrollArea.setWidget(self.scrollAreaParkingSpots)
 
         self.horizontalLayout_2.addWidget(self.scrollArea)
 
@@ -164,7 +149,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Main", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Spot 1", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"DETECTOR", None))
         self.label_spot_id.setText(QCoreApplication.translate("MainWindow", u"id: ", None))
     # retranslateUi

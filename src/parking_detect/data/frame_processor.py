@@ -1,18 +1,22 @@
+from parking_detect.infrastructure.repository.json_parking_repository import JsonParkingRepository
 import numpy as np
 import cv2
 import json
 import os
 import time
+import logging
 
 
 class FrameProcessor:
     def __init__(self, frame):
         self.frame = frame
         self.clone = frame.copy()
+        self.json_parking_repository = JsonParkingRepository("data/parking_spots.json")
         self.points = [] # [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
         self.parking_spots = []
         self.current_spot_id = 1
         self.last_call_time = time.time()
+
 
     def mouse_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -112,15 +116,26 @@ class FrameProcessor:
         except Exception as e:
             print("SAVE ERROR: {e}")
 
-    def load_spots(self, filename="data/parking_spots.json") -> bool:
-        if os.path.exists(filename):
-            with open(filename, 'r') as f:
-                data = json.load(f)
-                print("LOAD", data)
-                self.parking_spots = data["parking_spots"]
-                self.current_spot_id = len(self.parking_spots) + 1
+    # def load_spots(self, filename="data/parking_spots.json") -> bool:
+    #     if os.path.exists(filename):
+    #         with open(filename, 'r') as f:
+    #             data = json.load(f)
+    #             print("LOAD", data)
+    #             self.parking_spots = data["parking_spots"]
+    #             self.current_spot_id = len(self.parking_spots) + 1
+    #         return True
+    #     return False
+
+    def load_spots(self) -> bool:
+        try:
+            data = self.json_parking_repository.get_spots()
+            self.parking_spots = data["parking_spots"]
+            self.current_spot_id = len(self.parking_spots) + 1
             return True
-        return False
+        except Exception as e:
+            logging.info("LOAD SPOTS ERROR")
+            return False
+
 
     def draw_all_spots(self, frame) -> None:
         for spot in self.parking_spots:
