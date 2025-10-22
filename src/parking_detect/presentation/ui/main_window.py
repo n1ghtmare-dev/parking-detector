@@ -5,17 +5,20 @@ from PySide6.QtCore import Signal, Slot
 from parking_detect.presentation.views.ui_main import Ui_MainWindow
 import logging
 import sys
+import cv2
+import numpy as np
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     clicked_spot_signal = Signal(QPushButton)
 
-    def __init__(self):
+    def __init__(self, conn):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Indigo Parking Detector")
         self.json_parking_repository = JsonParkingRepository("data/parking_spots.json")
         self._create_spots_widgets()
+        self.conn = conn
 
 
     def _create_spots_widgets(self):
@@ -46,17 +49,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             
             print(spot)
 
+    def on_get_frame(self):
+        try:
+            self.conn.send("get_frame")
+
+            if self.conn.poll():
+                response = self.conn.recv()
+
+                if response['type'] == 'frame':
+                    print("GET TYPE FRAME")
+                    frame_array = np.frombuffer(response['data'], dtype=np.uint8)
+                    frame = cv2.imdecode(frame_array, cv2.IMREAD_COLOR)
+                    
+                    cv2.imshow('Current Frame from Analizer', frame)
+                    cv2.waitKey(1)
+            else:
+                print("No data")
+        except Exception as e:
+            logging.info(f"Error get frame: {e}")
+
     @Slot()
     def on_btn_spot_clicked(self, spot: dict):
-        print(spot)
+        self.on_get_frame()
+        # print(spot)
 
 
 
-
-def start_app() -> None:
+def start_app(conn) -> None:
     logging.info("Start application")
     app = QApplication()
-    window = MainWindow()
+    window = MainWindow(conn)
     window.show()
     sys.exit(app.exec())
 

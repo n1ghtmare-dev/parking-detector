@@ -4,8 +4,9 @@ from parking_detect.data.frame_processor import FrameProcessor
 
 
 class Service:
-    def __init__(self, video_path):
+    def __init__(self, video_path, conn):
         self.video_path = video_path
+        self.conn = conn
         self.parking_spots = []
 
     def check_spot_occupancy(self, frame, spot_coords):
@@ -17,9 +18,6 @@ class Service:
         mean_val = cv2.mean(frame, mask=mask)[0]
 
         return mean_val < 80
-    
-    def mark_spots(self, frame, grayscale_frame):
-        ...
 
     def run(self):
         cap = cv2.VideoCapture(self.video_path)
@@ -30,7 +28,7 @@ class Service:
                 break
 
             # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            frame_handler = FrameProcessor(frame)
+            frame_handler = FrameProcessor(frame, self.conn)
             done_frame = frame_handler.detect_spots()
             
             cv2.imshow("frame", done_frame)
@@ -50,6 +48,7 @@ class Service:
 
         cap.release()
         cv2.destroyAllWindows()
+        self.conn.close()
                 
 
 

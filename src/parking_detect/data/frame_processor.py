@@ -8,7 +8,8 @@ import logging
 
 
 class FrameProcessor:
-    def __init__(self, frame):
+    def __init__(self, frame, conn):
+        self.conn = conn
         self.frame = frame
         self.clone = frame.copy()
         self.json_parking_repository = JsonParkingRepository("data/parking_spots.json")
@@ -17,6 +18,25 @@ class FrameProcessor:
         self.current_spot_id = 1
         self.last_call_time = time.time()
 
+    def _check_ui_requests(self):
+        if self.conn.poll():
+            try:
+                request = self.conn.recv()
+                if request == "get_frame":
+                    self._send_frame_to_ui()
+            except Exception as e:
+                print(f"ERROR: {e}")
+
+    def _send_frame_to_ui(self):
+        try:
+            _, buffer = cv2.imencode('.jpg', self.frame)
+            self.conn.send({
+                'type': 'frame',
+                'data': buffer.tobytes(),
+                'shape': self.frame.shape
+            })
+        except Exception as e:
+            print(f"ERROR: {e}")
 
     def mouse_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -61,7 +81,6 @@ class FrameProcessor:
 
         free_spots = 0
         for spot in self.parking_spots:
-            print(spot)
             xs = [point[0] for point in spot["points"]]
             ys = [point[1] for point in spot["points"]]
 
@@ -83,7 +102,6 @@ class FrameProcessor:
                 cv2.imshow("S", gray_crop)
             
             count = cv2.countNonZero(gray_crop)
-            print(count)
             color, thick = [(0, 255, 0), 5] if count < threshold else [(0, 0, 255), 2]
 
             if count < threshold:
@@ -96,7 +114,6 @@ class FrameProcessor:
     def draw_spot(self, spot):
         points_array = np.array(spot["points"], np.int32)
         cv2.polylines(self.clone, [points_array], True, (0, 255, 0), 2)
-        print("DRAW", self.parking_spots)
 
         # Put The Text
         # center_x = sum([p[0] for p in spot["points"]]) // 4
@@ -108,7 +125,6 @@ class FrameProcessor:
         data = {
             "parking_spots": self.parking_spots
         }
-        print(data)
         
         try:
             with open("data/parking_spots.json", 'w') as f:
@@ -152,14 +168,13 @@ class FrameProcessor:
         while True:
             # frame_with_spots = self.draw_all_spots(self.clone)
             self.check_spots_occupancy()
-
+            self._check_ui_requests()
             cv2.imshow("SPOTS DETECT", self.clone)
 
 
             key = cv2.waitKey(1) & 0xFF
 
             if key == ord('s'):
-                print(self.parking_spots)
                 self.save_spots()
                 break
             elif key == ord('q'):
